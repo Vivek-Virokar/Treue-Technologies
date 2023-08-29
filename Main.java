@@ -1,218 +1,237 @@
-package com.book;
+package com.voting;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Main{
+    private Scanner sc=new Scanner( System.in);
+    
 
-    Scanner sc=new Scanner( System.in);
-    User loggedUser=null;
-    List<Book> books=Book.getBookList();
-
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         new Main().start();
     }
 
-    public void start() throws IOException{
-        File file=new File("db.txt");
-        if(!file.exists()){
-            file.createNewFile();
-        }
-        drawResource();
 
-    }
 
-    private void drawResource(){
-        System.out.println("\n\n\n\t\tWelcome to Book Store");
-        System.out.println("\n\t1.Login");
-        System.out.println("\n\t2.New User ? Register here ");
+    private void start()
+    {
+
+        System.out.println("\n\n\t\t***** Welcome to Online Voting System *****");
+        System.out.println("\n\t1.Vote");
+        System.out.println("\n\t2.Admin Login");
         System.out.println("\n\t3.Exit");
-        System.out.print("\n\tEnter your choice here : ");
+        System.out.print("\n\tEnter Your Choice : ");
         int ch=sc.nextInt();
-        switch(ch){
-            case 1:login();break;
-            case 2:register();break;
-            case 3:System.exit(0);break;
-            default:System.out.println("\n\tInvalid choice !");drawResource();
-        }
-    }
-
-    private void login(){
-        System.out.println("\n\n\tLogin");
-        System.out.print("\n\tEnter Your Email : ");
-        String email=sc.next();
-        System.out.print("\n\tEnter Your Password : ");
-        String password=sc.next();
-        FileUtil fileUtil=new FileUtil();
-        User user=fileUtil.isUserAvailable(email,password);
-        if(user==null){
-            System.out.println("\n\tInvalid email or Password");
-            System.out.println("\n\t1.Login again \t\t2.Main Menu");
-            int ch=sc.nextInt();
-            switch(ch){
-                case 1:login();break;
-                case 2:drawResource();break;
-                default :drawResource();
-            }
-        }else{
-            System.out.println("\n\tSuccessfully Logged in !");
-            loggedUser=user;
-            showDashboard(user);
-        }
-    }
-    private void register(){
-        System.out.println("\n\n\tRegister New User");
-        System.out.print("\n\tEnter Your First Name : ");
-        String firstName = sc.next();
-        System.out.print("\n\tEnter Your Last Name : ");
-        String lastName = sc.next();
-        System.out.print("\n\tEnter Your Email Address : ");
-        String email = sc.next();
-        System.out.print("\n\tEnter Your Mobile No : ");
-        long number = sc.nextLong();
-        System.out.print("\n\tEnter Your Password : ");
-        String password=sc.next();
-       
-        User user = new User(firstName, lastName, number, email,password);
-        FileUtil fileUtil=new FileUtil();
-        if(fileUtil.append(user)){
-            System.out.println("\n\tRegistration Successfull !");
-            System.out.println("\n\t1.Login \t\t2.Main Menu");
-            int ch=sc.nextInt();
-            switch (ch){
-                case 1:login();break;
-                case 2:drawResource();break;
-                default :drawResource();
-            }
-            drawResource();
-        }else{
-            System.out.println("\n\tSomething Went Error !");
-
-        }
-
-    }
-
-    public void myAccount(){
-        System.out.println("\n\n\t\t My Account");
-        System.out.println("\n\tFirst Name : "+loggedUser.getFirstName());
-        System.out.println("\n\tLast Name : "+loggedUser.getLastName());
-        System.out.println("\n\tEmail : "+loggedUser.getEmail());
-        System.out.println("\n\tMobile No : "+loggedUser.getMobileNumber());
-        System.out.print("\n\n\tEnter Any Key to go Back : ");
-        sc.next();
-        showDashboard(loggedUser);
-    }
-
-    private void viewAllBooks(){
-        int id;
-        for(Book book:books) {
-           String isAvailable=book.isAvailable() ? "Yes" : "No";
-           String owner=book.getOwnedBy()!=null ? "yes":"No";
-           System.out.println(
-            "\n\n\t\tBook Id : "+book.getId()+"\n\t\tBook Name : "+book.getName()+"\n\t\tBook Author : "
-            +book.getAuthor()+"\n\t\tBook Category"+book.getCategory()+"\n\t\tIs Available : "
-            +isAvailable+"\n\t\tOwner : "+owner+"\n\t\tBook Price : "+book.getPrice()
-           );
-        }
-        System.out.print("\n\n\t\tDo You Want to Purchase Book ? (press 1) (press 0 for exit) : ");
-        int ch=sc.nextInt();
-        if(ch==1){
-           addToCart();
-        }else{
-            showDashboard(loggedUser);
-        }
-
-    }
-    private void searchBooks(){
-
-        System.out.print("\n\n\t\tEnter book name to search : ");
-        String name=sc.next();
-        int results=0;
-        for (Book book : books) {
-            if(book.getName().toLowerCase().contains(name.toLowerCase())){
-                System.out.println("\n\n\tBook Name : "
-                +book.getName()+"\t\n"+book.getAuthor()+
-                "\n\t"+book.getPrice());
-                results++;
-            }
-        }
-        System.out.println("\n\t"+results+" Found (press 1 for purchase or press any key to go back) : ");
-        int ch=sc.nextInt();
-        if(ch==1){
-            addToCart();
-        }
-        else{
-            showDashboard(loggedUser);
-        }
-    }
-    private void myCart(){
-        double price=0;
-        System.out.println("\n\n\t\tBooks in your cart :");
-        for (Book book : books) {
-            if(book.getOwnedBy()==loggedUser.getEmail()){
-                price=price+book.getPrice();
-                System.out.println("\n\t"+book.getName());
-            }
-        }
-        System.out.println(
-            "\n\tFinal Price : "+price
-        );
-        System.out.print("\n\tEnter key to go back... ");
-        sc.next();
-        showDashboard(loggedUser);
-    }
-    private void addToCart(){
-        System.out.print("\n\n\t\tPlease enter the book id : ");
-        Book id=books.get(sc.nextInt());
-        if(id.isAvailable()){
-        id.setOwnedBy(loggedUser.getEmail());
-        id.setAvailable(false);
-        System.out.println("\n\n\t\tBook Successfully Added in cart !");
-        showDashboard(loggedUser);
-        }else{
-            System.out.println("\n\n\t\tSorry ! this book is not available right now");
-            showDashboard(loggedUser);
-        }
-
-
-    }
-
-    private void showDashboard(User user){
-        System.out.println("\n\n\t\tWelcome, "+user.getFirstName());
-        System.out.println("\n\t1.View All books");
-        System.out.println("\n\t2.Search books");
-        System.out.println("\n\t3.My Cart");
-        System.out.println("\n\t4.My Account");
-        System.out.println("\n\t5.Log out");
-        System.out.print("Enter your Choice here : ");
-        int ch=sc.nextInt();
-        switch(ch){
+        switch (ch) {
             case 1:{
-               viewAllBooks();
-                break;
+                  vote();
+                  break;
             }
-            case 2:{
-              searchBooks();
+            case 2: {
+                admin();
                 break;
             }
             case 3:{
-               myCart();
+                System.exit(0);
+            }
+            default:{
+                System.out.println("\n\tInvalid Selection Please try again !");
+                start();
+            }
+               
+        }
+
+    }
+
+    private void admin(){
+
+        System.out.println("\n\t***** Welcome to admin portal *****");
+        
+        System.out.print("\n\tEnter Your Name : ");
+        String name=sc.next();
+        System.out.print("\n\tEnter Your Password : ");
+        String pass=sc.next();
+        if(name.equals(Admin.GLOBAL_NAME) && pass.equals(Admin.GLOBAL_PASSWORD)){
+            showAdminDashbord();
+        }else{
+            System.out.println("\n\t Wrong username or password !");
+            start();
+        }
+
+    }
+
+    private void viewVoterList(){
+        System.out.println("\n\n\t\tVoters Name and Response");
+       
+        Map<String,String> map=Parties.voterList;
+        List<String> keySet=new ArrayList<>(map.keySet());
+        for(int i = 0 ;i<map.size();++i ){
+            System.out.println("\n\tName : "+map.get(keySet.get(i))+"\t Voter ID : "+keySet.get(i));
+        }
+        showAdminDashbord();
+    }
+
+    private void viewResults(){
+         System.out.println("\n\n\t\tResult of the election is as follows: ");
+         if(Parties.partyMap.isEmpty()){
+           
+            System.out.println("\n\t Voting not Started !");
+            showAdminDashbord();
+            return;
+         }
+         int abc_party=Parties.partyMap.get(Parties.ABC_PARTY);
+         int xyz_party=Parties.partyMap.get(Parties.XYZ_PARTY);
+         int new_party=Parties.partyMap.get(Parties.NEW_PARTY);
+         int old_party=Parties.partyMap.get(Parties.OLD_PARTY);
+
+         int result=max(abc_party,xyz_party,new_party,old_party);
+
+         System.out.println("\n\tABC Part : "+abc_party+"\n\t"+
+         "XYZ party : "+xyz_party+"\n\t"+"New Party : "+new_party+
+         "\n\t"+"Old Party : "+old_party
+         );
+
+         if(result==abc_party){
+            System.out.println("\n\tThe winner party is ABC Party with total votes :"+abc_party);
+         }
+         if(result==xyz_party){
+            System.out.println("\n\tThe winner party is XYZ Party with total votes :" +xyz_party );
+         }
+         if(result==new_party){
+            System.out.println("\n\tThe winner party is NEW Party with total votes:"+new_party);
+         }
+         if(result==old_party){
+            System.out.println("\n\tThe winner party is OLD Party with total votes:" +old_party);
+         }
+         showAdminDashbord();
+    }
+
+    
+
+    private int max(int... i){
+        int prev=0;
+        for(int a:i){
+            if(a>prev){
+                prev=a;
+            }
+        }
+        return prev;
+    }
+
+    private void modifyBallots(){
+
+        System.out.print("\n\n\t\tDo you want clear all data ? (y/n) : ");
+        char ch=sc.next().charAt(0);
+        if(ch=='y'){
+            System.out.println("\n\n\t\t Current vote count : "+Parties.voterList.size());
+            Parties.partyMap.clear();
+            Parties.voterList.clear();
+            System.out.println("\t\t All Data cleared !");
+        }
+            showAdminDashbord();
+        
+
+    }
+
+    private void showAdminDashbord(){
+
+        System.out.println("\n\n\t\t***** Welcome to admin portal *****");
+        System.out.println("\n\t1.View Voters Data");
+        System.out.println("\n\t2.View Results");
+        System.out.println("\n\t3.Modify Ballots");
+        System.out.println("\n\t4.Log Out");
+
+        int ch=sc.nextInt();
+        switch(ch){
+            case 1:{
+                viewVoterList();
+                break;
+            }
+            case 2:{
+                viewResults();
+                break;
+            }
+            case 3:{
+                modifyBallots();
                 break;
             }
             case 4:{
-                myAccount();
+                start();
                 break;
-            }
-            case 5:{
-                loggedUser=null;
-                drawResource();
-                break;
-            }
-            default:{
-                System.out.println("\n\tInvalid Option !");
             }
         }
+
+    }
+
+    private void vote(){
+        System.out.println("\n\n\t\t***** Welcome to Voting Portal *****");
+        System.out.print("\n\tPlease Enter Your Name : ");
+        String name=sc.next();
+        System.out.print("\n\tPlease Enter Your Voter Id Number : ");
+        String id=sc.next();
+
+        if(Parties.voterList.containsKey(id)){
+            System.out.println("\n\tYou have already voted !");
+            System.out.print("\n\tDo you want to enter details again ? (y/n) : ");
+            char ch=sc.next().charAt(0);
+            switch(ch){
+                case 'y':vote();break;
+                default : {
+                    System.out.println("\n\t Thanks for using our System !");
+                }
+            }
+
+        }else{
+            System.out.println("\n\tPlease Choose Your Party : ");
+            System.out.print("\n\t1. A.B.C Party");
+            System.out.print("\n\t2. X.Y.Z Party");
+            System.out.print("\n\t3. New Party");
+            System.out.print("\n\t4. Old Part");
+            System.out.print("\n\tEnter your choice : ");
+            int choice = sc.nextInt();
+            switch (choice) {
+                case 1:{
+                    
+                    Map<Integer,Integer> map=Parties.partyMap;
+                    int key=Parties.ABC_PARTY;
+                    Parties.partyMap.put(key, map.getOrDefault(key, 0) + 1);
+                    Parties.voterList.put(id, name);
+                    System.out.println("\n\tDear "+name+",\n You Voted ABC Party ! Thanks for Voting");
+                    break;
+                }
+                case 2:{
+                    Map<Integer,Integer> map=Parties.partyMap;
+                    int key=Parties.XYZ_PARTY;
+                    Parties.partyMap.put(key, map.getOrDefault(key, 0) + 1);
+                    Parties.voterList.put(id, name);
+                    System.out.println("\n\tDear "+name+",\n You Voted XYZ Party ! Thanks for Voting");
+                    break;
+                }
+                case 3:{
+                     Map<Integer,Integer> map=Parties.partyMap;
+                    int key=Parties.NEW_PARTY;
+                    Parties.partyMap.put(key, map.getOrDefault(key, 0) + 1);
+                    Parties.voterList.put(id, name);
+                    System.out.println("\n\tDear "+name+",\n You Voted New Party ! Thanks for Voting");
+                    break;
+                }
+                case 4:{
+                     Map<Integer,Integer> map=Parties.partyMap;
+                    int key=Parties.OLD_PARTY;
+                    Parties.partyMap.put(key, map.getOrDefault(key, 0) + 1);
+                    Parties.voterList.put(id, name);
+                    System.out.println("\n\tDear "+name+",\n You Voted Old Party ! Thanks for Voting");
+                    break;
+                }
+                default:{
+                    System.out.println("\n\tInvalid Choice !");
+                }
+
+            }
+        }
+
+        start();
     }
 }
